@@ -132,7 +132,7 @@ public class Proxy {
 	
 	public void start()
 	{
-		ThreadPool.getPool().execute( new TcpServer( this.tcpPort ) );
+		ThreadPool.getPool().execute( new TcpServer( this.tcpPort, this.users ) );
 		
 	}
 	

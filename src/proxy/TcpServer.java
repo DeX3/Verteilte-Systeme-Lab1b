@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.ConcurrentHashMap;
 
+import entities.User;
 import exceptions.ServerException;
 import exceptions.TcpHandler;
 
@@ -12,13 +14,15 @@ public class TcpServer implements Runnable {
 
 	int port;
 	boolean stopping;
+	ConcurrentHashMap<String, User> users;
 	
 	protected static final int SO_TIMEOUT = 100;
 	
-	public TcpServer( int port )
+	public TcpServer( int port, ConcurrentHashMap<String, User> users )
 	{
 		this.port = port;
 		stopping = false;
+		this.users = users;
 	}
 	
 	@Override
@@ -32,7 +36,7 @@ public class TcpServer implements Runnable {
 			try{
 				Socket client = srv.accept();
 				
-				ThreadPool.getPool().execute( new TcpHandler( client ) );
+				ThreadPool.getPool().execute( new TcpHandler( client, null ) );
 			}catch( SocketTimeoutException stex )
 			{ continue; }
 			

@@ -8,6 +8,10 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import cmd.Command;
+import cmd.CommandParser;
+import cmd.StringParameter;
+
 import entities.User;
 
 public class TcpHandler implements Runnable {
@@ -27,6 +31,12 @@ public class TcpHandler implements Runnable {
 	public void run() {
 		
 		BufferedReader br = null;
+		
+		CommandParser cmdParser = new CommandParser();
+		Command login = new Command( "login" );
+		login.addParameter( new StringParameter( "username" ) );
+		login.addParameter( new StringParameter( "password" ) );
+		
 		
 		try{
 			br = new BufferedReader( new InputStreamReader( this.client.getInputStream() ) );
