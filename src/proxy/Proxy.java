@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import net.IPEndPoint;
 import threading.ThreadPool;
 import cmd.Command;
 import cmd.CommandLineParser;
@@ -56,7 +58,7 @@ public class Proxy {
 	
 	
 	static{
-		cmdLineParser = new CommandLineParser(  "java Proxy", "Proxy for the first lab of Distributed Systems LU" );
+		cmdLineParser = new CommandLineParser(  "java proxy.Proxy", "Proxy for the first lab of Distributed Systems LU" );
 		PRM_TCPPORT = new IntegerParameter( "tcpPort", MIN_PORT, MAX_PORT, "the port to be used for instantiating a java.net.ServerSocket (handling TCP connection requests from clients)." );
 		PRM_UDPPORT = new IntegerParameter( "udpPort", MIN_PORT, MAX_PORT, "the port to be used for instantiating a java.net.DatagramSocket (handling UDP requests from fileservers)." );
 		PRM_FILESERVERTIMEOUT = new IntegerParameter( "fileserverTimeout", MIN_TIMEOUT, MAX_TIMEOUT, "the period in milliseconds each fileserver has to send an isAlive packet (only containing the fileserver's TCP port). If no such packet is received within this time, the fileserver is assumed to be offline and is no longer available for handling requests." );
@@ -71,9 +73,12 @@ public class Proxy {
 	}
 	
 	ConcurrentHashMap<String, User> users;
-	ConcurrentHashMap<String, User> loggedIn;
+	ConcurrentHashMap<IPEndPoint, Date> fileservers;
+
+	private UdpServer udpServer;
 	
-	public Proxy( int tcpPort, int udpPort, int fileserverTimeout, int checkPeriod, ConcurrentHashMap<String, User> users )
+	public Proxy( int tcpPort, int udpPort, int fileserverTimeout, int checkPeriod,
+				  ConcurrentHashMap<String, User> users, ConcurrentHashMap<IPEndPoint, Date> fileservers )
 	{
 		this.tcpPort = tcpPort;
 		this.udpPort = udpPort;
@@ -81,7 +86,7 @@ public class Proxy {
 		this.checkPeriod = checkPeriod;
 
 		this.users = users;
-		this.loggedIn = new ConcurrentHashMap<String, User>();
+		this.fileservers = fileservers;
 	}
 	
 	public static void main( String...args )
@@ -95,7 +100,14 @@ public class Proxy {
 		ConcurrentHashMap<String,User> users = readUsers();
 		logger.info( "Done reading " + users.size() + " user entries" );
 		
-		Proxy p = new Proxy( PRM_TCPPORT.getValue(), PRM_UDPPORT.getValue(), PRM_FILESERVERTIMEOUT.getValue(), PRM_CHECKPERIOD.getValue(), users );
+		ConcurrentHashMap<IPEndPoint, Date>  fileservers = new ConcurrentHashMap<IPEndPoint, Date>();
+		
+		Proxy p = new Proxy( PRM_TCPPORT.getValue(),
+							 PRM_UDPPORT.getValue(),
+							 PRM_FILESERVERTIMEOUT.getValue(),
+							 PRM_CHECKPERIOD.getValue(),
+							 users,
+							 fileservers );
 		p.start();
 		
 		System.out.println( "Available commands are !fileservers, !users and !exit" );
@@ -199,6 +211,9 @@ public class Proxy {
 		
 		this.tcpServer = new TcpServer( this.tcpPort, this.users );
 		ThreadPool.getPool().execute( this.tcpServer );
+		
+		this.udpServer = new UdpServer( this.udpPort, this.fileservers );
+		ThreadPool.getPool().execute( this.udpServer );
 	}
 	
 }

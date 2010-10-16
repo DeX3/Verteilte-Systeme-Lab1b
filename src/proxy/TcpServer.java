@@ -48,7 +48,7 @@ public class TcpServer implements Stoppable {
 				logger.info( "Client connected: " + client );
 				
 				TcpHandler tcpHandler = new TcpHandler( client, this );
-				//this.activeClients.add( tcpHandler );
+				
 				ThreadPool.getPool().execute( tcpHandler );
 			}catch( SocketTimeoutException stex )
 			{ continue; }

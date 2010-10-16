@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +17,7 @@ public class User {
 	
 	String name;
 	String password;
-	int credits;
+	AtomicInteger credits;
 	AtomicBoolean online;
 	
 	public String getName() {
@@ -36,28 +37,34 @@ public class User {
 	}
 
 	public int getCredits() {
-		return credits;
+		return credits.get();
 	}
 
 	public void setCredits(int credits) {
-		this.credits = credits;
+		this.credits.set( credits );
 	}
 	
 	public boolean isOnline() {
 		return this.online.get();
 	}
 
-
+	public int buy( int credits )
+	{
+		return this.credits.addAndGet( credits );
+	}
+	
+	
 	public User( String name )
 	{
 		this.name = name;
 		this.online = new AtomicBoolean( false );
+		this.credits = new AtomicInteger( 0 );
 	}
 	
-	public boolean logon()
+	public boolean login()
 	{ return this.online.compareAndSet( false, true ); }
 	
-	public boolean logoff()
+	public boolean logout()
 	{ return this.online.compareAndSet( true, false ); }
 	
 
@@ -90,7 +97,7 @@ public class User {
 				if( m.group(2) == null )		//credits-entry
 				{	
 					try{
-						u.credits = Integer.parseInt( users.getProperty( key ) );
+						u.setCredits( Integer.parseInt( users.getProperty( key ) ) );
 					}catch( NumberFormatException nfex )
 					{ throw new ParseException( "Value for key \"" + key + "\" is not valid" ); }
 					
