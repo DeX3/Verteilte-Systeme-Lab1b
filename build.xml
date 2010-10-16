@@ -34,7 +34,7 @@
 	</target>
     
     <target name="run-fileserver1" depends="compile" description="Run 1st fileserver.">
-        <java classname="your.Fileserver" fork="true" classpathref="project.classpath">
+        <java classname="fileserver.Fileserver" fork="true" classpathref="project.classpath">
         	<arg value="your/sharedFilesDir"/><!-- sharedFilesDir -->
         	<arg value="11732"/><!-- tcpPort -->
         	<arg value="localhost"/><!-- proxyHost -->
@@ -44,7 +44,7 @@
     </target>
 	
     <target name="run-fileserver2" depends="compile" description="Run 2nd fileserver.">
-        <java classname="your.Fileserver" fork="true" classpathref="project.classpath">
+        <java classname="fileserver.Fileserver" fork="true" classpathref="project.classpath">
         	<arg value="your/sharedFilesDir2"/><!-- sharedFilesDir -->
         	<arg value="11733"/><!-- tcpPort -->
         	<arg value="localhost"/><!-- proxyHost -->
@@ -54,7 +54,7 @@
     </target>
     
     <target name="run-client" depends="compile" description="Run client.">
-        <java classname="your.Client" fork="true" classpathref="project.classpath">
+        <java classname="client.Client" fork="true" classpathref="project.classpath">
             <arg value="your/downloadDir" /><!-- downloadDir -->
             <arg value="localhost" /><!-- proxyHost -->
             <arg value="11730" /><!-- proxyTCPPort -->

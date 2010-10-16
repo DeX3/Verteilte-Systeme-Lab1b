@@ -10,6 +10,12 @@ public class StringParameter extends Parameter<String> {
 		super( name );
 	}
 	
+	public StringParameter( String name, String description )
+	{
+		this( name );
+		this.description = description;
+	}
+	
 	@Override
 	public void parse(String str) throws ParseException {
 		this.value = str;
@@ -18,7 +24,8 @@ public class StringParameter extends Parameter<String> {
 
 	@Override
 	public void validate() throws ValidationException {
-		
 	}
+	
+	
 
 }

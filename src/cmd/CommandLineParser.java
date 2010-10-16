@@ -1,5 +1,6 @@
 package cmd;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 import exceptions.ParseException;
@@ -14,6 +15,11 @@ public class CommandLineParser {
 	public void addParameter( Parameter<?> p )
 	{
 		this.parameters.add( p );
+	}
+	
+	public void addParameters( Parameter<?>...params )
+	{
+		this.parameters.addAll( Arrays.asList(params) );
 	}
 	
 	public CommandLineParser( String programName, String programDescription )
@@ -42,6 +48,17 @@ public class CommandLineParser {
 			
 			p.validate();
 		}
+	}
+	
+	public Parameter<?> getParameter( String name )
+	{
+		for( Parameter<?> p : this.parameters )
+		{
+			if( p.getName().equals( name ) )
+				return p;
+		}
+		
+		return null;
 	}
 	
 	public String getUsageString()

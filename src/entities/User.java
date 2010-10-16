@@ -3,9 +3,9 @@ package entities;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +42,10 @@ public class User {
 	public void setCredits(int credits) {
 		this.credits = credits;
 	}
+	
+	public boolean isOnline() {
+		return this.online.get();
+	}
 
 
 	public User( String name )
@@ -57,9 +61,9 @@ public class User {
 	{ return this.online.compareAndSet( true, false ); }
 	
 
-	public static HashMap<String,User> readUsers( String propertiesFile ) throws IOException, FileNotFoundException, ParseException
+	public static ConcurrentHashMap<String,User> readUsers( String propertiesFile ) throws IOException, FileNotFoundException, ParseException
 	{
-		HashMap<String, User> ret = new HashMap<String, User>();
+		ConcurrentHashMap<String, User> ret = new ConcurrentHashMap<String, User>();
 		
 		InputStream in = ClassLoader.getSystemResourceAsStream( propertiesFile );
 		

@@ -62,6 +62,13 @@ public abstract class Parameter<T> {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return " [" + name + "=" + value + "]";
+	}
+	
+	
 	
 	
 }

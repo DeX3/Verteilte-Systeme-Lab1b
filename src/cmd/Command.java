@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import exceptions.ParseException;
+import exceptions.ValidationException;
 
 public class Command {
 
@@ -25,7 +26,18 @@ public class Command {
 	public void addParameter( Parameter<?> p )
 	{ this.parameters.add( p ); }
 	
-	public boolean parse( String str ) throws ParseException
+	public Parameter<?> getParameter( String name )
+	{
+		for( Parameter<?> p : this.parameters )
+		{
+			if( p.getName().equals( name ) )
+				return p;
+		}
+		
+		return null;
+	}
+	
+	public boolean parse( String str ) throws ParseException, ValidationException
 	{
 		if( !str.startsWith( "!" + cmd) )
 			return false;
@@ -48,7 +60,9 @@ public class Command {
 				value = m.group( i+2 );
 			
 			
-			param.parse( m.group(i) );
+			param.parse( value );
+			
+			param.validate();
 			
 			i += 3;
 		}
@@ -77,4 +91,11 @@ public class Command {
 		
 		return Pattern.compile( sb.toString() );		
 	}
+
+	@Override
+	public String toString() {
+		return "Command [cmd=" + cmd + ", parameters=" + parameters + "]";
+	}
+	
+	
 }

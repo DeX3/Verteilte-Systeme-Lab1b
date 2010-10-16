@@ -1,8 +1,10 @@
 package cmd;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 import exceptions.ParseException;
+import exceptions.ValidationException;
 
 public class CommandParser {
 	
@@ -19,7 +21,12 @@ public class CommandParser {
 	public void addCommand( Command cmd )
 	{ this.commands.add( cmd ); }
 	
-	public Command parse( String str ) throws ParseException
+	public void addCommands( Command...cmds )
+	{
+		this.commands.addAll( Arrays.asList(cmds) );
+	}
+	
+	public Command parse( String str ) throws ParseException, ValidationException
 	{
 		for( Command cmd : this.commands )
 		{

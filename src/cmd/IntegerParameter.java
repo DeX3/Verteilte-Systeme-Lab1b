@@ -37,10 +37,10 @@ public class IntegerParameter extends Parameter<Integer> {
 	@Override
 	public void validate() throws ValidationException {
 		if( this.value < this.minValue )
-			throw new ValidationException( this.name + " has to be at least " + minValue );
+			throw new ValidationException( "Parameter \"" + this.name + "\" has to be at least " + minValue );
 		
 		if( this.value > this.maxValue )
-			throw new ValidationException( this.name + " has a maximum of " + maxValue );
+			throw new ValidationException( "Parameter \"" +  this.name + "\" has a maximum of " + maxValue );
 	}
 
 }
