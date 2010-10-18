@@ -4,27 +4,27 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Logger;
 
 import threading.ThreadPool;
-
-import net.IPEndPoint;
+import entities.FileserverInfo;
+import entities.IPEndPoint;
 import exceptions.ServerException;
 
 public class UdpServer implements Runnable {
 	
 	int port;
 	boolean stopping;
-	private ConcurrentHashMap<IPEndPoint, Date> fileservers;
+	private ConcurrentHashMap<IPEndPoint, FileserverInfo> fileservers;
 	
 	
 	protected static final int SO_TIMEOUT = 100;
 	
 	public static final Logger logger = Logger.getLogger( UdpServer.class.getName() );
 	
-	public UdpServer( int port, ConcurrentHashMap<IPEndPoint, Date> fileservers )
+	public UdpServer( int port, ConcurrentHashMap<IPEndPoint, FileserverInfo> fileservers )
 	{
 		this.port = port;
 		this.fileservers = fileservers;
@@ -52,10 +52,13 @@ public class UdpServer implements Runnable {
 					srv.receive( packet );
 					
 					UdpHandler handler = new UdpHandler( packet, this.fileservers );
+					
 					ThreadPool.getPool().execute( handler );
 				}
 				catch ( SocketTimeoutException stex )
 				{ continue; }
+				catch( RejectedExecutionException reex )
+				{ break; }
 				
 			}catch( IOException e )
 			{ 
@@ -63,6 +66,10 @@ public class UdpServer implements Runnable {
 			}
 		}
 		
+	}
+
+	public void stop() {
+		this.stopping = true;
 	}
 	
 	

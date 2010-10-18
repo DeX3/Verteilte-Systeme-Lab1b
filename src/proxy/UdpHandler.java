@@ -1,21 +1,22 @@
 package proxy;
 
 import java.net.DatagramPacket;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import net.IPEndPoint;
+import entities.FileserverInfo;
+import entities.IPEndPoint;
+
 
 public class UdpHandler implements Runnable {
 
 	DatagramPacket packet;
-	ConcurrentHashMap<IPEndPoint, Date> fileservers;
+	ConcurrentHashMap<IPEndPoint, FileserverInfo> fileservers;
 
 	protected static final Logger logger = Logger.getLogger( UdpHandler.class.getName() );
 	
 	
-	public UdpHandler( DatagramPacket packet, ConcurrentHashMap<IPEndPoint, Date> fileservers )
+	public UdpHandler( DatagramPacket packet, ConcurrentHashMap<IPEndPoint, FileserverInfo> fileservers )
 	{
 		this.packet = packet;
 		this.fileservers = fileservers;
@@ -28,7 +29,7 @@ public class UdpHandler implements Runnable {
 		
 		IPEndPoint server = new IPEndPoint( packet.getAddress(), tcpPort );
 		
-		Date old = this.fileservers.putIfAbsent( server, new Date() );
+		FileserverInfo old = this.fileservers.put( server, new FileserverInfo( server ) );
 		
 		if( old == null )
 			logger.info( "New server registered (" + server.toString() + ")" );

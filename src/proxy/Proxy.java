@@ -4,16 +4,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import net.IPEndPoint;
 import threading.ThreadPool;
 import cmd.Command;
 import cmd.CommandLineParser;
 import cmd.CommandParser;
 import cmd.IntegerParameter;
+import entities.FileserverInfo;
+import entities.IPEndPoint;
 import entities.User;
 import exceptions.ParseException;
 import exceptions.ValidationException;
@@ -73,12 +73,14 @@ public class Proxy {
 	}
 	
 	ConcurrentHashMap<String, User> users;
-	ConcurrentHashMap<IPEndPoint, Date> fileservers;
+	ConcurrentHashMap<IPEndPoint, FileserverInfo> fileservers;
 
 	private UdpServer udpServer;
+
+	private AliveChecker aliveChecker;
 	
 	public Proxy( int tcpPort, int udpPort, int fileserverTimeout, int checkPeriod,
-				  ConcurrentHashMap<String, User> users, ConcurrentHashMap<IPEndPoint, Date> fileservers )
+				  ConcurrentHashMap<String, User> users, ConcurrentHashMap<IPEndPoint, FileserverInfo> fileservers )
 	{
 		this.tcpPort = tcpPort;
 		this.udpPort = udpPort;
@@ -100,7 +102,7 @@ public class Proxy {
 		ConcurrentHashMap<String,User> users = readUsers();
 		logger.info( "Done reading " + users.size() + " user entries" );
 		
-		ConcurrentHashMap<IPEndPoint, Date>  fileservers = new ConcurrentHashMap<IPEndPoint, Date>();
+		ConcurrentHashMap<IPEndPoint, FileserverInfo>  fileservers = new ConcurrentHashMap<IPEndPoint, FileserverInfo>();
 		
 		Proxy p = new Proxy( PRM_TCPPORT.getValue(),
 							 PRM_UDPPORT.getValue(),
@@ -134,8 +136,18 @@ public class Proxy {
 							User u = users.get( name );
 							System.out.println( name + " " + (u.isOnline()? "online" : "offline") + " Credits: " + u.getCredits() );
 						}
-					}
-					else if( cmd == CMD_EXIT )
+					}else if( cmd == CMD_FILESERVERS )
+					{
+						for( IPEndPoint endPoint : fileservers.keySet() )
+						{
+							FileserverInfo server = fileservers.get( endPoint );
+							
+							System.out.println( "IP: " + endPoint.getAddress().getHostAddress() +
+												" Port: " + endPoint.getPort() +
+												(server.isOnline()? " online" : " offline") +
+												" Usage: " + server.getUsage() );
+						}
+					}else if( cmd == CMD_EXIT )
 						break;
 					
 				}catch( ParseException pex )
@@ -145,7 +157,7 @@ public class Proxy {
 				{ assert false : "Validation exception in non-validating command"; }
 				
 			}catch( IOException ioex )
-			{ logger.severe( "Couldn't read from stdin" ); }
+			{ logger.warning( "Couldn't read from stdin" ); }
 			
 		}
 		
@@ -201,6 +213,12 @@ public class Proxy {
 		if( tcpServer != null )
 			tcpServer.stop();
 		
+		if( udpServer != null )
+			udpServer.stop();
+		
+		if( aliveChecker != null )
+			aliveChecker.stop();
+		
 		ThreadPool.getPool().shutdown();
 	}
 
@@ -209,11 +227,14 @@ public class Proxy {
 	{
 		logger.info( "Started proxy at ports tcp: " + this.tcpPort + ", udp: " + this.udpPort );
 		
-		this.tcpServer = new TcpServer( this.tcpPort, this.users );
+		this.tcpServer = new TcpServer( this.tcpPort, this.users, this.fileservers );
 		ThreadPool.getPool().execute( this.tcpServer );
 		
 		this.udpServer = new UdpServer( this.udpPort, this.fileservers );
 		ThreadPool.getPool().execute( this.udpServer );
+		
+		this.aliveChecker = new AliveChecker( this.checkPeriod, this.fileserverTimeout, this.fileservers );
+		this.aliveChecker.start();
 	}
 	
 }
