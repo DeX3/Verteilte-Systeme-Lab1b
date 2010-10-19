@@ -45,7 +45,7 @@ public class Client {
 													public void validate( String value ) throws ValidationException {
 														File f = new File( value );
 														
-														if( !f.isDirectory() || !f.exists() || !f.canRead() )
+														if( !f.isDirectory() || !f.exists() || !f.canWrite() )
 															throw new ValidationException( "The given path is not a valid directory." );
 													}
 		  									   } );

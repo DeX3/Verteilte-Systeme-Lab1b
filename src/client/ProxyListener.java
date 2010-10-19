@@ -2,7 +2,6 @@ package client;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.logging.Logger;
@@ -117,31 +116,17 @@ public class ProxyListener implements Runnable {
 					}else
 					{
 						Matcher m = pFile.matcher( input );
-					
+				
 						//Check if the proxy wants to signal a file transfer
 						if( m.matches() )
 						{
-							//The proxy is going to send a file line-by-line
+							//The proxy is going to send a file
 							
 							//Parse file name and size
 							String filename = downloadDir.getAbsolutePath() + "/" + m.group(2);
 							long size = Long.parseLong( m.group(1) );
 							
-							//Create the output file
-							File output = new File( filename );
-							PrintStream ps = new PrintStream( output );
-							
-							String line;
-							while( output.length() < size )
-							{
-								//Read line by line and print it to the file
-								line = proxy.receiveLine();
-								ps.println( line );
-								ps.flush();		//Ensure that the new line gets written to the disk, so output.length() gets updated
-							}
-							
-							//Close the output file
-							ps.close();
+							proxy.receiveFile( new File(filename), size );
 							
 							System.out.println( "Successfully downloaded \"" + filename + "\"" );
 						}else

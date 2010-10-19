@@ -1,6 +1,9 @@
 package net;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -34,6 +37,8 @@ public class TcpHelper {
 	
 	/** Constant for receiving negative acknowledge-messages. */
 	public static final String STR_NACK = "NACK";
+	
+	public static final int BUFFER_SIZE = 1024;
 	
 	/**
 	 * Gets the command-parser.
@@ -212,5 +217,66 @@ public class TcpHelper {
 			}catch( SocketTimeoutException stex )
 			{ continue; }
 		}
+	}
+	
+	public void sendFile( File f )
+	{		
+		if( !f.exists() )
+		{
+			this.sendLine( "The requested file does not exist." );
+			return;
+		}
+		
+		if( !f.canRead() )
+		{
+			this.sendLine( "The requested file could not be read." );
+			return;
+		}
+		
+		//Send file size, so the proxy can check, wether the user has enough credits to download the file
+		this.sendLine( "File size: " + f.length() );
+		
+		try{
+			//Wait for a positive answer
+			if( this.receiveAck() )
+			{
+				BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream(f) ) );
+				
+				
+				String line;
+				while( (line=br.readLine()) != null )
+				{
+					this.sendLine( line );
+				}
+			}else
+				return;
+		}catch( FileNotFoundException fnfex )
+		{
+			this.sendLine( "The requested file does not exist." );
+			return;
+		}catch( IOException ioex )
+		{
+			this.sendLine( "The requested file could not be read (" + ioex.getMessage() + ")" );
+			return;
+		}
+	}
+	
+	public void receiveFile( File output, long size ) throws IOException
+	{
+		output.createNewFile();
+	
+		PrintStream ps = new PrintStream( output );
+		
+		String line;
+		while( output.length() < size )
+		{
+			//Read line by line and print it to the file
+			line = this.receiveLine();
+			ps.println( line );
+			ps.flush();		//Ensure that the new line gets written to the disk, so output.length() gets updated
+		}
+		
+		//Close the output file
+		ps.close();
 	}
 }

@@ -1,11 +1,7 @@
 package fileserver;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.logging.Logger;
@@ -78,7 +74,9 @@ public class FileTcpHandler implements Runnable {
 			}
 		}else if( cmd == CMD_DOWNLOAD )
 		{
-			doDownload( proxy, cmd );
+			File f = new File( "shared/" + cmd.getParameter( "filename" ).getValue() );
+			
+			proxy.sendFile( f );
 		}
 		
 
@@ -86,52 +84,5 @@ public class FileTcpHandler implements Runnable {
 			proxy.close();
 		}catch( IOException ioex )
 		{ logger.warning( "Couldn't send list of files" ); }
-	}
-
-	private void doDownload(TcpHelper proxy, Command cmd) {
-		
-		File f = new File( "shared/" + cmd.getParameter( "filename" ).getValue() );
-		
-		if( !f.exists() )
-		{
-			proxy.sendLine( "The requested file does not exist." );
-			return;
-		}
-		
-		if( !f.canRead() )
-		{
-			proxy.sendLine( "The requested file could not be read." );
-			return;
-		}
-		
-		proxy.sendLine( "File size: " + f.length() );
-		
-		try{
-			if( proxy.receiveAck() )
-			{
-			
-				BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream(f) ) );
-				
-				proxy.sendLine( "Begin file: " + f.getName() );
-				
-				String line;
-				while( (line=br.readLine()) != null )
-				{
-					proxy.sendLine( line );
-				}
-			}else
-				return;
-		}catch( FileNotFoundException fnfex )
-		{
-			proxy.sendLine( "The requested file does not exist." );
-			return;
-		}catch( IOException ioex )
-		{
-			proxy.sendLine( "The requested file could not be read." );
-			return;
-		}
-		
-		
-		
 	}
 }

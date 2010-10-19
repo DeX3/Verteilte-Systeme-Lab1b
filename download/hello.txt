@@ -1,0 +1,5 @@
+this is a shared file
+with more lines
+and another one
+
+the above line is empty
