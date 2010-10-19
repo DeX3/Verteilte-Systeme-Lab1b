@@ -182,10 +182,13 @@ public class TcpHandler implements Runnable {
 				client
 						.sendLine("Available commands are !credits, !buy <credits>, !list, !download <filename> and !exit.");
 			} else
-				client
-						.sendLine("This user is already logged in from another client");
+			{
+				client.sendLine("This user is already logged in from another client");
+				return null;
+			}
 		} else {
 			client.sendLine("Wrong username or password.");
+			return null;
 		}
 
 		return u;

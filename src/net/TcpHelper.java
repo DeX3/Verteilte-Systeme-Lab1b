@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -240,13 +241,13 @@ public class TcpHelper {
 			//Wait for a positive answer
 			if( this.receiveAck() )
 			{
-				BufferedReader br = new BufferedReader( new InputStreamReader( new FileInputStream(f) ) );
+				FileInputStream fis = new FileInputStream(f);
 				
-				
-				String line;
-				while( (line=br.readLine()) != null )
+				byte[] buf = new byte[BUFFER_SIZE];
+				int read;
+				while( (read=fis.read( buf )) != -1 )
 				{
-					this.sendLine( line );
+					this.ps.write( buf, 0, read );
 				}
 			}else
 				return;
@@ -266,13 +267,15 @@ public class TcpHelper {
 		output.createNewFile();
 	
 		PrintStream ps = new PrintStream( output );
+		InputStream is = this.socket.getInputStream();
 		
-		String line;
+		byte[] buf = new byte[BUFFER_SIZE];
+		int read;
 		while( output.length() < size )
 		{
 			//Read line by line and print it to the file
-			line = this.receiveLine();
-			ps.println( line );
+			read = is.read( buf, 0, buf.length );
+			ps.write( buf, 0, read );
 			ps.flush();		//Ensure that the new line gets written to the disk, so output.length() gets updated
 		}
 		
