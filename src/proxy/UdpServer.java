@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import threading.ThreadPool;
 import entities.FileserverInfo;
 import entities.IPEndPoint;
-import exceptions.ServerException;
 
 public class UdpServer implements Runnable {
 	
@@ -39,7 +38,10 @@ public class UdpServer implements Runnable {
 			srv = new DatagramSocket( this.port );
 			srv.setSoTimeout( SO_TIMEOUT );
 		}catch( IOException ioex )
-		{ throw new ServerException( ioex ); }
+		{ 
+			logger.severe( "Couldn't create udp socket, maybe the proxy is already running?" );
+			System.exit( 1 );
+		}
 			
 		byte[] buf = new byte[4];
 		DatagramPacket packet = new DatagramPacket( buf , buf.length );

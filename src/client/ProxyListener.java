@@ -142,7 +142,7 @@ public class ProxyListener implements Runnable {
 		}catch( IOException ioex )
 		{
 			logger.severe( "Unable to listen for proxy connections: " + ioex.getMessage() );
-			return;
+			System.exit( 1 );
 		}
 		
 	}

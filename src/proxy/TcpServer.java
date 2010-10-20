@@ -3,6 +3,7 @@ package proxy;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
@@ -61,6 +62,9 @@ public class TcpServer implements Runnable {
 			catch( RejectedExecutionException reex )
 			{ break; }
 			
+		}catch( SocketException ex ) {
+			logger.severe( "Couldn't create serversocket, maybe the proxy is already running?" );
+			System.exit( 1 );
 		}catch( IOException ioex )
 		{ throw new ServerException( ioex ); }
 	}
