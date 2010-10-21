@@ -121,6 +121,11 @@ public class TcpHandler implements Runnable {
 	private void doDownload( TcpHelper client, Command cmd ) {
 
 		FileserverInfo srvInfo = getLeastUsedServer();
+		
+		if( srvInfo == null ) {
+			client.sendLine( "There is currently no server online, that can fulfill your request." );
+			return;
+		}
 
 		try {
 			TcpHelper srv = srvInfo.createTcpHelper();

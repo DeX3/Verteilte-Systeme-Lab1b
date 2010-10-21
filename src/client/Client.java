@@ -105,20 +105,23 @@ public class Client {
 		
 		
 		//Read commands until the users quits using the exit-command
-		for(;;)
+		do
 		{
 			try
 			{
+				while( System.in.available() == 0 )
+					proxy.throwIfError();
+				
 				input = br.readLine();
 				
 				tcpProxy.sendLine( input );
 				
-				if( "!exit".equals( input ) )
-					break;
-				
-			}catch( IOException ioex )
-			{ logger.severe( "Couldn't read from stdin" ); }
-		}
+			}catch( Throwable t )
+			{
+				logger.severe( t.getMessage() );
+				break;
+			}
+		}while(  !( "!exit".equals( input ) )  );
 		
 		System.out.println( "Shutting down..." );
 		proxy.stop();		//Stop the proxy again
